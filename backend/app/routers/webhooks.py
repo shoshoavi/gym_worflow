@@ -1,13 +1,14 @@
 import logging
 from html import escape
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, Request
+from uuid import UUID
+from fastapi import APIRouter, Body, Depends, HTTPException, Request
 from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.models import Lead, WebhookEvent
+from app.models import Lead, OutboundJob, WebhookEvent
 from app.schemas import InternalOutboundJob
 from app.services.messaging import enqueue_template_job
 from app.services.orchestrator import draft_reply_stub, playbook_for_lead
@@ -114,3 +115,40 @@ def internal_outbound_template(
         template_name=payload.template_name,
     )
     return {"status": "queued"}
+
+
+def _update_job_status(
+    db: Session, job_id: str, status: str, detail: str | None
+) -> dict[str, str]:
+    try:
+        uid = UUID(job_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail="invalid uuid") from e
+    job = db.get(OutboundJob, uid)
+    if not job:
+        raise HTTPException(status_code=404, detail="job not found")
+    job.status = status
+    if detail is not None:
+        job.detail = detail
+    db.commit()
+    return {"status": status, "job_id": str(job.id)}
+
+
+@router.post("/internal/jobs/{job_id}/sent")
+def mark_job_sent(
+    job_id: str,
+    body: dict[str, Any] = Body(default_factory=dict),
+    db: Session = Depends(get_db),
+) -> dict[str, str]:
+    """n8n calls this after Meta confirms the template send."""
+    return _update_job_status(db, job_id, "sent", body.get("detail"))
+
+
+@router.post("/internal/jobs/{job_id}/failed")
+def mark_job_failed(
+    job_id: str,
+    body: dict[str, Any] = Body(default_factory=dict),
+    db: Session = Depends(get_db),
+) -> dict[str, str]:
+    """n8n calls this when Meta rejects the template send."""
+    return _update_job_status(db, job_id, "failed", body.get("detail"))

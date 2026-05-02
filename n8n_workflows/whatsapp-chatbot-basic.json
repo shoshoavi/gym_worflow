@@ -1,0 +1,261 @@
+{
+  "name": "whatsapp chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "1c5051be-f782-4ad8-9a8a-5f06c1d55586",
+      "name": "WhatsApp Trigger",
+      "webhookId": "4c68615f-fb31-49d9-8b80-df795e96cb77",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "oZicxUJaa1Phabci",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "=To ensure your WhatsApp responses are concise and don't get cut off, I have integrated your full instructions with strict brevity constraints.\n\nPaste this into your n8n AI node:\n\nSystem Message: clever fit Digital Concierge (WhatsApp Optimized)\n\nRole: You are the \"clever fit Support Pro\" for clever fit Germany. Provide efficient, motivating assistance for our studios in München, Berlin, and Düsseldorf.\n\nBrand Essentials:\n\nHours: Daily 06:00–23:00.\n\nVibe: High-quality, lifestyle-focused, \"Made in Germany\" excellence.\n\nKey Features: TRX, Solarium, Massage, Mineral drinks, and virtual training.\n\nStrict WhatsApp Formatting Rules:\n\nBrevity is Mandatory: Keep responses to max 2-3 short sentences.\n\nFormatting: Use bold for hours, locations, and key terms. Use bullet points for lists.\n\nLanguage: Respond in the user's language (German or English).\n\nNo Fluff: Skip long intros or \"How can I help you today?\" Get straight to the point.\n\nKey Responsibilities:\n\nStudio Info: Direct users to München, Berlin, or Düsseldorf.\n\nProbetraining: Always invite non-members for a free trial: \"Ready? Book your Probetraining now!\"\n\nAccount/Safety: Assist with Ruhezeit (pauses). Never give medical advice; refer to on-site trainers.\n\nOperational Guardrails:\n\nIf a detail is unknown, tell them to check the clever fit app or ask on-site.\n\nDo not hallucinate details about specific contracts.\n\nClosing Signature:\nEnd with one short phrase: \"Mach dich stark!\", \"See you in the studio!\", or \"Keep training hard!\" 💪"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "b3499430-c95d-4545-b04f-21827ddacb29",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "ce7488d7-4103-489d-98a1-57eaf27cb95e",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "WCCKNCMHggrwCL8l",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "=customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        208
+      ],
+      "id": "b5a8e8b9-98ef-4138-9465-2a0edbd10f31",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "15YfxIkcI5KwxWoNgockJtTtZYXCJZGg5YdptN8aOwgg",
+          "mode": "list",
+          "cachedResultName": "whatsapp chatbot",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15YfxIkcI5KwxWoNgockJtTtZYXCJZGg5YdptN8aOwgg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15YfxIkcI5KwxWoNgockJtTtZYXCJZGg5YdptN8aOwgg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now.setZone('Asia/Jerusalem').toFormat('dd-MM-yy HH:mm:ss') }}",
+            "Phone Number": "={{ $json.contacts[0].wa_id }}",
+            "User Message": "={{ $('WhatsApp Trigger').item.json.messages[0].text.body }}",
+            "Bot Response": "={{ $('AI Agent').item.json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "User Message",
+              "displayName": "User Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Bot Response",
+              "displayName": "Bot Response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        768,
+        0
+      ],
+      "id": "1cd19d9f-166d-4dde-8bff-64538481d963",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "SLBxpeJtZxyr0zSs",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        0
+      ],
+      "id": "0ed1b90c-59ba-42e6-94f5-b4231efe3091",
+      "name": "Send message and wait for response",
+      "webhookId": "8624ddc6-827f-4898-b65a-5f7d66714630",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "Fo62KhQkGi3auwzl",
+          "name": "WhatsApp account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "3380cfb0-6f04-47a1-9a3e-504e5c8ad77c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1e2a03a00dbb1754c1076bbaab20e5fae1fe76c058d93202528b37de939dbb45"
+  },
+  "id": "Nygf1rBzfDrqIQxf",
+  "tags": []
+}

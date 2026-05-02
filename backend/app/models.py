@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import JSON, Boolean, DateTime, String, Text, func
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -45,4 +45,20 @@ class OutboundJob(Base):
     template_name: Mapped[str] = mapped_column(String(128))
     status: Mapped[str] = mapped_column(String(32), default="queued")  # queued | sent | failed | skipped
     detail: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ConversationMessage(Base):
+    __tablename__ = "conversation_messages"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    lead_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("leads.id"), nullable=True, index=True
+    )
+    wa_id: Mapped[str] = mapped_column(String(32), index=True)        # Meta wa_id (E.164 without +)
+    direction: Mapped[str] = mapped_column(String(8))                  # in | out
+    text: Mapped[str] = mapped_column(Text)
+    playbook: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    meta_message_id: Mapped[str | None] = mapped_column(String(128), nullable=True, unique=True, index=True)
+    raw: Mapped[dict] = mapped_column(JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     twilio_auth_token: str | None = None
     twilio_whatsapp_from: str | None = None
 
+    # n8n outbound webhook — backend POSTs here after queueing an OutboundJob.
+    # If unset, jobs are queued without dispatch (dev mode).
+    n8n_outbound_webhook_url: str | None = None
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

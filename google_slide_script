@@ -1,0 +1,105 @@
+/**
+ * פונקציה ראשית ליצירת המצגת המלאה
+ */
+function createFullCleverFitDeck() {
+  createCleverFitSlides();
+}
+
+/**
+ * פונקציה ליצירת כל 16 השקופיות מתוך הקוד
+ */
+function createCleverFitSlides() {
+  const presentation = SlidesApp.getActivePresentation();
+  
+  const data = [
+    {
+      title: "Code Agent | Vom ersten Tag an einsatzbereit",
+      body: "AI Lead Management & WhatsApp Upsell\nBuilt for Clever Fit",
+      notes: "Acknowledge German title. Pivot: 'I don't speak German, but I translated this site myself — check codeagent.live/de. Language isn't the barrier — execution is.'"
+    },
+    {
+      title: "Who I am: Arthur Shimonov",
+      body: "• Senior Software Engineer (5 years high-tech)\n• DevOps/SRE Specialization (Scalability & Security)\n• IDF Technology Unit Alumnus\n• Former Personal Trainer & Nutritionist\n• One person shipping what a 4-5 person team ships",
+      notes: "Two things make me different: Production systems for global companies + I was a personal trainer. I know why members sign up and why they leave."
+    },
+    {
+      title: "Analysis: What we found at Clever Fit",
+      body: "Current State:\n- Homepage targets franchises, not members\n- Forms miss phone/WhatsApp/goals\n- 98% WhatsApp open rate ignored\n- No instant confirmation or qualification\n- Missing Upsell at signup (PT/Supplements/Nutrition)",
+      notes: "Diplomatic tone — NOT attack. 'We did our homework, here's what we see, here's what we fix together.' This slide earns authority."
+    },
+    {
+      title: "Your Team is the world's most expensive FAQ System",
+      body: "Front Desk Time Breakdown:\n- 45% FAQs (Automate this!)\n- 30% Retention\n- 15% Sales\n- 10% Admin\n\nGoal: Free the team to focus on Retention and Sales.",
+      notes: "If a chatbot can answer 'what are your hours' — why does your highest-paid front-desk person do it?"
+    },
+    {
+      title: "The WhatsApp Upsell Leak",
+      body: "98% Open Rates vs. Current Offline Systems\n\nMissed Revenue Opportunities:\n- Personal Training (+€60/mo)\n- Supplements (+€30/mo)\n- Family Plans (+€20/mo)\n- Nutrition Tracking",
+      notes: "Clever Fit — and most gyms — aren't on WhatsApp yet. This is your biggest leverage point."
+    },
+    {
+      title: "One Platform, Three Flows",
+      body: "1. Visitor: Ad/Social -> Lead Form -> WhatsApp Consent\n2. System: CRM Sync -> AI Assistant routing\n3. WhatsApp: Deal Offer (Prospects) vs Welcome/Upsell (Members)\n4. Team: Human Escalation for high-value issues only",
+      notes: "Three flows. One system. Team sees only what needs them."
+    },
+    {
+      title: "Intelligent AI Routing",
+      body: "The Bot knows the CRM status:\n- Non-Member: Sales Playbook (Trial offer, tour booking)\n- Paying Member: Routine FAQ, Upsell suggestions, or sensitive escalation to staff",
+      notes: "Operational layer, not a one-size chatbot."
+    },
+    {
+      title: "Germany-Ready & GDPR Compliant",
+      body: "- Opt-in Consent First (No cold outreach)\n- Full Audit Trail (Logged in CRM)\n- Meta-Approved Templates only\n- Right-to-Erasure (One-click purge)",
+      notes: "Germany. GDPR. WhatsApp. Designed around them, not despite them."
+    },
+    {
+      title: "Built for Franchise Scale",
+      body: "- Per-studio Data Isolation\n- Localized German Templates (Custom pricing per studio)\n- Rapid Rollout (Ready for 50+ studios in weeks)",
+      notes: "Franchise economics advantage — one platform, all studios, all German."
+    },
+    {
+      title: "Track Record: Selected Projects",
+      body: "• Coach Hub AI: CRM & Business Dashboard\n• AI Nutrition Tracker: Mobile-first food recognition\n• Habit Tracker: Responsive Web App\n• Infrastructure Bot: Production DevOps Automation",
+      notes: "Coach Hub is beta. Nutrition/Habit trackers are responsive web apps. I'm not a tourist in fitness."
+    },
+    {
+      title: "Partnership vs. Software Vendor",
+      body: "Code Agent Partnership Benefits:\n- Skin in the Game (Success-based fees)\n- 60-day Time to Launch\n- Vertically Deep Fitness DNA\n- Vertical Tech IP ownership",
+      notes: "My success happens only if your numbers go up."
+    },
+    {
+      title: "Aligned Partnership Structure",
+      body: "• Tech IP & Build from Code Agent\n• Studios & Data from Clever Fit\n• Equity or Rev-Share (No vendor invoices)\n• 1 Pilot Studio | 60 Days | Agreed KPIs",
+      notes: "NOT negotiating today. Today: do we like each other, do we believe this?"
+    },
+    {
+      title: "The Tech Transformation Roadmap",
+      body: "Phase 1: WhatsApp AI Bot (Now)\nPhase 2: Deep Personalization (Training goals)\nPhase 3: Branded Mobile App\nPhase 4: AI Upsell Engine (Margin driver)",
+      notes: "Phase 3 is the retention moat. Phase 4 is the margin engine. The chatbot is just the entry point."
+    },
+    {
+      title: "Implementation Timeline (90 Days)",
+      body: "• Days 1-30: Pilot Integration (CRM API, DE Templates)\n• Days 31-60: Live with Members (Measure stats)\n• Days 61-90: Review & Scale (KPI hits -> rollout)",
+      notes: "From handshake to numbers in 90 days."
+    },
+    {
+      title: "Financial Opportunity Calculator",
+      body: "Conservative Baseline Analysis:\n- 800 leads/mo/studio\n- 12% -> 18% Conversion Lift\n- +48 new members/mo per studio\n- +€34,560 incremental annual revenue per studio",
+      notes: "Pause. Ask for their numbers. If they refuse, use default. Close: 'One studio, conservative. Multiply by Clever Fit's franchise size. Let's talk pilot #1.'"
+    },
+    {
+      title: "Proof of Execution",
+      body: "Visit: codeagent.live/de\nLive demo of localized high-performance automation.",
+      notes: "Backup slide - proof of translation and execution."
+    }
+  ];
+
+  data.forEach(item => {
+    let slide = presentation.appendSlide(SlidesApp.PredefinedLayout.TITLE_AND_BODY);
+    slide.getPlaceholder(SlidesApp.PlaceholderType.TITLE).asShape().getText().setText(item.title);
+    slide.getPlaceholder(SlidesApp.PlaceholderType.BODY).asShape().getText().setText(item.body);
+    slide.getNotesPage().getSpeakerNotesShape().getText().setText(item.notes);
+  });
+
+  Logger.log("המצגת נוצרה בהצלחה!");
+}
