@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db import init_db
-from app.routers import leads, webhooks
+from app.routers import alerts, conversations, leads, webhooks
 from app.schemas import HealthResponse
 
 logging.basicConfig(level=logging.INFO)
@@ -30,6 +30,8 @@ app.add_middleware(
 
 app.include_router(leads.router)
 app.include_router(webhooks.router)
+app.include_router(conversations.router)
+app.include_router(alerts.router)
 
 
 @app.get("/health", response_model=HealthResponse)

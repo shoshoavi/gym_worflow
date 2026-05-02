@@ -1,0 +1,624 @@
+{
+  "name": "whatsapp chatbot mvp (inbound)",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["messages"],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "id": "0e8b7a01-7a01-4a01-aa01-000000000001",
+      "name": "WhatsApp Trigger",
+      "webhookId": "ad9b6d32-aaaa-4d11-bbbb-000000000001",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "oZicxUJaa1Phabci",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0e8b7a01-cfg-0000-0000-000000000001",
+              "name": "BACKEND_URL",
+              "value": "https://YOUR-BACKEND-TUNNEL.example.com",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 0],
+      "id": "0e8b7a01-7a01-4a01-aa01-000000000002",
+      "name": "Config"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0e8b7a01-istext-0000-0000-000000000001",
+              "leftValue": "={{ $('WhatsApp Trigger').item.json.messages[0].type }}",
+              "rightValue": "text",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [440, 0],
+      "id": "0e8b7a01-7a01-4a01-aa01-000000000003",
+      "name": "Is Text?"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "Aktuell verstehe ich nur Textnachrichten 🙂 Schreib mir kurz, wobei ich dir helfen kann.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [660, 200],
+      "id": "0e8b7a01-7a01-4a01-aa01-000000000004",
+      "name": "Send Non-Text Notice",
+      "webhookId": "ad9b6d32-aaaa-4d11-bbbb-000000000002",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "Fo62KhQkGi3auwzl",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Config').item.json.BACKEND_URL }}/api/v1/leads/by-phone/{{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 0],
+      "id": "0e8b7a01-7a01-4a01-aa01-000000000005",
+      "name": "Get Lead Context"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0e8b7a01-bc-0000-0000-000000000001",
+              "name": "wa_id",
+              "value": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+              "type": "string"
+            },
+            {
+              "id": "0e8b7a01-bc-0000-0000-000000000002",
+              "name": "user_text",
+              "value": "={{ $('WhatsApp Trigger').item.json.messages[0].text.body }}",
+              "type": "string"
+            },
+            {
+              "id": "0e8b7a01-bc-0000-0000-000000000003",
+              "name": "meta_message_id",
+              "value": "={{ $('WhatsApp Trigger').item.json.messages[0].id }}",
+              "type": "string"
+            },
+            {
+              "id": "0e8b7a01-bc-0000-0000-000000000004",
+              "name": "playbook",
+              "value": "={{ $json.playbook }}",
+              "type": "string"
+            },
+            {
+              "id": "0e8b7a01-bc-0000-0000-000000000005",
+              "name": "lead_id",
+              "value": "={{ $json.lead?.id ?? null }}",
+              "type": "string"
+            },
+            {
+              "id": "0e8b7a01-bc-0000-0000-000000000006",
+              "name": "lead_name",
+              "value": "={{ $json.lead?.name ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "0e8b7a01-bc-0000-0000-000000000007",
+              "name": "gym_name",
+              "value": "={{ $json.gym.name }}",
+              "type": "string"
+            },
+            {
+              "id": "0e8b7a01-bc-0000-0000-000000000008",
+              "name": "gym_hours",
+              "value": "={{ $json.gym.hours }}",
+              "type": "string"
+            },
+            {
+              "id": "0e8b7a01-bc-0000-0000-000000000009",
+              "name": "gym_pricing",
+              "value": "={{ $json.gym.pricing_blurb }}",
+              "type": "string"
+            },
+            {
+              "id": "0e8b7a01-bc-0000-0000-00000000000a",
+              "name": "gym_address",
+              "value": "={{ $json.gym.address }}",
+              "type": "string"
+            },
+            {
+              "id": "0e8b7a01-bc-0000-0000-00000000000b",
+              "name": "gym_phone",
+              "value": "={{ $json.gym.phone }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [880, 0],
+      "id": "0e8b7a01-7a01-4a01-aa01-000000000006",
+      "name": "Build Context"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.BACKEND_URL }}/api/v1/conversations",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"wa_id\": \"{{ $json.wa_id }}\",\n  \"direction\": \"in\",\n  \"text\": {{ JSON.stringify($json.user_text) }},\n  \"lead_id\": {{ $json.lead_id ? '\"' + $json.lead_id + '\"' : 'null' }},\n  \"playbook\": \"{{ $json.playbook }}\",\n  \"meta_message_id\": \"{{ $json.meta_message_id }}\",\n  \"raw\": { \"source\": \"meta_whatsapp\" }\n}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1100, 200],
+      "id": "0e8b7a01-7a01-4a01-aa01-000000000007",
+      "name": "Log Inbound"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0e8b7a01-sw-0000-0000-000000000001",
+                    "leftValue": "={{ $json.playbook }}",
+                    "rightValue": "member_cs",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "member_cs"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0e8b7a01-sw-0000-0000-000000000002",
+                    "leftValue": "={{ $json.playbook }}",
+                    "rightValue": "sales",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sales"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0e8b7a01-sw-0000-0000-000000000003",
+                    "leftValue": "={{ $json.playbook }}",
+                    "rightValue": "unknown",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "unknown"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "fallback"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [1100, 0],
+      "id": "0e8b7a01-7a01-4a01-aa01-000000000008",
+      "name": "Route Playbook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0e8b7a01-pmcs-0000-0000-000000000001",
+              "name": "system_prompt",
+              "value": "=Du bist der WhatsApp-Concierge von {{ $json.gym_name }}. Du sprichst mit einem aktiven Mitglied{{ $json.lead_name ? ' (' + $json.lead_name + ')' : '' }}.\n\nGRUNDREGELN\n- Antworte freundlich, kurz, max. 2–3 Sätze. WhatsApp-Format.\n- Sprich Deutsch (oder die Sprache der Nachricht).\n- Kein Smalltalk, keine langen Einleitungen.\n- Bei Unsicherheit: verweise auf die clever fit App oder das Team vor Ort.\n- Keine medizinischen Ratschläge.\n\nSTUDIO-DATEN\n- Öffnungszeiten: {{ $json.gym_hours }}\n- Adresse: {{ $json.gym_address }}\n- Telefon: {{ $json.gym_phone }}\n\nDeine Rolle: Mitglieder-Service. Beantworte Fragen zu Öffnungszeiten, Kursen, Geräten, Ruhezeit (Pause), Zugangsdaten. Bei Vertrags-, Rechts- oder Gesundheitsfragen → leite an das Team weiter.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1320, -180],
+      "id": "0e8b7a01-7a01-4a01-aa01-000000000009",
+      "name": "Prompt: member_cs"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0e8b7a01-psale-0000-0000-000000000001",
+              "name": "system_prompt",
+              "value": "=Du bist die WhatsApp-Sales-Beraterin von {{ $json.gym_name }}. Du schreibst mit einem Interessenten{{ $json.lead_name ? ' (' + $json.lead_name + ')' : '' }}, der noch nicht zahlendes Mitglied ist.\n\nZIEL: Probetraining buchen oder Mitgliedschaft abschließen.\n\nGRUNDREGELN\n- Warm, motivierend, max. 2–3 Sätze.\n- Sprich Deutsch (oder die Sprache der Nachricht).\n- Erwähne den passenden CTA: \"Willst du dein Probetraining buchen?\"\n- Bei Preisfragen: nenne die Preis-Kurzinfo.\n- Bei Unsicherheit: clever fit App oder Team vor Ort.\n\nSTUDIO-DATEN\n- Öffnungszeiten: {{ $json.gym_hours }}\n- Preis: {{ $json.gym_pricing }}\n- Adresse: {{ $json.gym_address }}\n- Telefon: {{ $json.gym_phone }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1320, 0],
+      "id": "0e8b7a01-7a01-4a01-aa01-00000000000a",
+      "name": "Prompt: sales"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0e8b7a01-punk-0000-0000-000000000001",
+              "name": "system_prompt",
+              "value": "=Du bist die WhatsApp-Begrüßung von {{ $json.gym_name }}. Du schreibst zum ersten Mal mit dieser Person — wir wissen noch nichts über sie.\n\nZIEL: kurz vorstellen + nach Name + Interesse fragen, damit wir den Kontakt richtig einordnen.\n\nGRUNDREGELN\n- Höflich, kurz, max. 2 Sätze.\n- Sprich Deutsch (oder die Sprache der Nachricht).\n- Frag z.B.: \"Wie heißt du, und worum geht's bei dir? Probetraining, Mitgliedschaft, oder was anderes?\"\n- Keine ausführlichen Studiodetails — erstmal Vertrauen aufbauen.\n\nSTUDIO-DATEN (nur falls direkt gefragt)\n- Öffnungszeiten: {{ $json.gym_hours }}\n- Adresse: {{ $json.gym_address }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1320, 180],
+      "id": "0e8b7a01-7a01-4a01-aa01-00000000000b",
+      "name": "Prompt: unknown"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Build Context').item.json.user_text }}",
+        "options": {
+          "systemMessage": "={{ $json.system_prompt }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [1560, 0],
+      "id": "0e8b7a01-7a01-4a01-aa01-00000000000c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [1480, 200],
+      "id": "0e8b7a01-7a01-4a01-aa01-00000000000d",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "WCCKNCMHggrwCL8l",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [1640, 200],
+      "id": "0e8b7a01-7a01-4a01-aa01-00000000000e",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0e8b7a01-esc-0000-0000-000000000001",
+              "leftValue": "={{ ($('Build Context').item.json.user_text + ' ' + $json.output) }}",
+              "rightValue": "kündig|vertrag|anwalt|arzt|verletz|geld zur|beschwerde|kuendig",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1820, 0],
+      "id": "0e8b7a01-7a01-4a01-aa01-00000000000f",
+      "name": "Escalation?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0e8b7a01-or-0000-0000-000000000001",
+              "name": "output",
+              "value": "Danke für deine Nachricht 🙏 Ein Teammitglied meldet sich innerhalb von 24h bei dir. Falls dringend: ruf uns einfach an.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [2040, -180],
+      "id": "0e8b7a01-7a01-4a01-aa01-000000000010",
+      "name": "Override Reply"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.BACKEND_URL }}/api/v1/alerts/escalation",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"wa_id\": \"{{ $('Build Context').item.json.wa_id }}\",\n  \"reason\": \"keyword\",\n  \"snippet\": {{ JSON.stringify($('Build Context').item.json.user_text) }},\n  \"lead_id\": {{ $('Build Context').item.json.lead_id ? '\"' + $('Build Context').item.json.lead_id + '\"' : 'null' }},\n  \"playbook\": \"{{ $('Build Context').item.json.playbook }}\"\n}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2260, -180],
+      "id": "0e8b7a01-7a01-4a01-aa01-000000000011",
+      "name": "Alert Backend"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [2480, 0],
+      "id": "0e8b7a01-7a01-4a01-aa01-000000000012",
+      "name": "Send Reply",
+      "webhookId": "ad9b6d32-aaaa-4d11-bbbb-000000000003",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "Fo62KhQkGi3auwzl",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.BACKEND_URL }}/api/v1/conversations",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"wa_id\": \"{{ $('Build Context').item.json.wa_id }}\",\n  \"direction\": \"out\",\n  \"text\": {{ JSON.stringify($('AI Agent').item.json.output) }},\n  \"lead_id\": {{ $('Build Context').item.json.lead_id ? '\"' + $('Build Context').item.json.lead_id + '\"' : 'null' }},\n  \"playbook\": \"{{ $('Build Context').item.json.playbook }}\",\n  \"raw\": { \"source\": \"ai_agent\" }\n}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2700, 0],
+      "id": "0e8b7a01-7a01-4a01-aa01-000000000013",
+      "name": "Log Outbound"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "15YfxIkcI5KwxWoNgockJtTtZYXCJZGg5YdptN8aOwgg",
+          "mode": "list",
+          "cachedResultName": "whatsapp chatbot",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15YfxIkcI5KwxWoNgockJtTtZYXCJZGg5YdptN8aOwgg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15YfxIkcI5KwxWoNgockJtTtZYXCJZGg5YdptN8aOwgg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now.setZone('Asia/Jerusalem').toFormat('dd-MM-yy HH:mm:ss') }}",
+            "Phone Number": "={{ $('Build Context').item.json.wa_id }}",
+            "User Message": "={{ $('Build Context').item.json.user_text }}",
+            "Bot Response": "={{ $('AI Agent').item.json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            { "id": "Timestamp", "displayName": "Timestamp", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "Phone Number", "displayName": "Phone Number", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "User Message", "displayName": "User Message", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "Bot Response", "displayName": "Bot Response", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [2920, 0],
+      "id": "0e8b7a01-7a01-4a01-aa01-000000000014",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "SLBxpeJtZxyr0zSs",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [[{ "node": "Config", "type": "main", "index": 0 }]]
+    },
+    "Config": {
+      "main": [[{ "node": "Is Text?", "type": "main", "index": 0 }]]
+    },
+    "Is Text?": {
+      "main": [
+        [{ "node": "Get Lead Context", "type": "main", "index": 0 }],
+        [{ "node": "Send Non-Text Notice", "type": "main", "index": 0 }]
+      ]
+    },
+    "Get Lead Context": {
+      "main": [[{ "node": "Build Context", "type": "main", "index": 0 }]]
+    },
+    "Build Context": {
+      "main": [[
+        { "node": "Route Playbook", "type": "main", "index": 0 },
+        { "node": "Log Inbound", "type": "main", "index": 0 }
+      ]]
+    },
+    "Route Playbook": {
+      "main": [
+        [{ "node": "Prompt: member_cs", "type": "main", "index": 0 }],
+        [{ "node": "Prompt: sales", "type": "main", "index": 0 }],
+        [{ "node": "Prompt: unknown", "type": "main", "index": 0 }],
+        [{ "node": "Prompt: sales", "type": "main", "index": 0 }]
+      ]
+    },
+    "Prompt: member_cs": {
+      "main": [[{ "node": "AI Agent", "type": "main", "index": 0 }]]
+    },
+    "Prompt: sales": {
+      "main": [[{ "node": "AI Agent", "type": "main", "index": 0 }]]
+    },
+    "Prompt: unknown": {
+      "main": [[{ "node": "AI Agent", "type": "main", "index": 0 }]]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [[{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "Simple Memory": {
+      "ai_memory": [[{ "node": "AI Agent", "type": "ai_memory", "index": 0 }]]
+    },
+    "AI Agent": {
+      "main": [[{ "node": "Escalation?", "type": "main", "index": 0 }]]
+    },
+    "Escalation?": {
+      "main": [
+        [{ "node": "Override Reply", "type": "main", "index": 0 }],
+        [{ "node": "Send Reply", "type": "main", "index": 0 }]
+      ]
+    },
+    "Override Reply": {
+      "main": [[
+        { "node": "Alert Backend", "type": "main", "index": 0 },
+        { "node": "Send Reply", "type": "main", "index": 0 }
+      ]]
+    },
+    "Alert Backend": {
+      "main": [[]]
+    },
+    "Send Reply": {
+      "main": [[{ "node": "Log Outbound", "type": "main", "index": 0 }]]
+    },
+    "Log Outbound": {
+      "main": [[{ "node": "Append row in sheet", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "00000000-0000-0000-0000-000000000001",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1e2a03a00dbb1754c1076bbaab20e5fae1fe76c058d93202528b37de939dbb45"
+  },
+  "id": "wa-mvp-inbound-0001",
+  "tags": []
+}

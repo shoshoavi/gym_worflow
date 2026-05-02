@@ -36,3 +36,17 @@ class InternalOutboundJob(BaseModel):
     lead_id: UUID
     campaign_key: str = Field(..., max_length=64)
     template_name: str = Field(..., max_length=128)
+
+
+class GymProfileRead(BaseModel):
+    name: str
+    hours: str
+    pricing_blurb: str
+    address: str
+    phone: str
+
+
+class LeadByPhoneRead(BaseModel):
+    lead: LeadRead | None
+    playbook: str  # member_cs | sales | unknown
+    gym: GymProfileRead

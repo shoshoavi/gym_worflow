@@ -1,0 +1,145 @@
+{
+  "name": "WhatsApp Business API - HTTP Reuquets",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v24.0/{whatsapp_business_account_id}/register",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {token}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "messaging_product",
+              "value": "whatsapp"
+            },
+            {
+              "name": "pin",
+              "value": "{numeric_6digit_pin}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -272,
+        0
+      ],
+      "id": "abdbf445-77da-4d6b-8227-90cefeb8e4a9",
+      "name": "Register Phone Number"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v24.0/{phone_number_id}/subscribed_apps",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {token}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "{\"subscribed_fields\": [\"messages\"]}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -48,
+        0
+      ],
+      "id": "e8dedb80-9f33-468d-9e61-13fedab3de3a",
+      "name": "Subscribe to an App"
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v24.0/{phone_number_id}/subscribed_apps",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {token}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        176,
+        0
+      ],
+      "id": "0681cbeb-c7b7-4a72-89a1-3b565dd24a33",
+      "name": "Check Subscribed Apps"
+    },
+    {
+      "parameters": {
+        "content": "## Update all values inside {} in each node with your own values.",
+        "height": 80,
+        "width": 720
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -128
+      ],
+      "id": "db098eb3-5633-437c-8f28-eaf81aa8eb94",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Subscribe to an App": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a31b9e4a-3c10-4176-8bf4-ab4a31ceba05",
+  "meta": {
+    "instanceId": "b51e87106b3998dd6351d9d84d669b58b8bf496da65429ac5a48bf7bc60bce2d"
+  },
+  "id": "1iSsoG4LB3Xk4ohY",
+  "tags": []
+}

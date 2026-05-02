@@ -1,0 +1,275 @@
+{
+  "name": "whatsapp template outbound mvp",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "template-job",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "id": "out-node-0001-0000-0000-000000000001",
+      "name": "Job Webhook",
+      "webhookId": "out-webhook-0001-0000-0000-000000000001"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "out-cfg-0000-0000-000000000001",
+              "name": "BACKEND_URL",
+              "value": "https://YOUR-BACKEND-TUNNEL.example.com",
+              "type": "string"
+            },
+            {
+              "id": "out-cfg-0000-0000-000000000002",
+              "name": "language_code",
+              "value": "de",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 0],
+      "id": "out-node-0001-0000-0000-000000000002",
+      "name": "Config"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "out-pl-0000-0000-000000000001",
+              "name": "job_id",
+              "value": "={{ $('Job Webhook').item.json.body.job_id }}",
+              "type": "string"
+            },
+            {
+              "id": "out-pl-0000-0000-000000000002",
+              "name": "wa_id",
+              "value": "={{ $('Job Webhook').item.json.body.wa_id }}",
+              "type": "string"
+            },
+            {
+              "id": "out-pl-0000-0000-000000000003",
+              "name": "lead_name",
+              "value": "={{ $('Job Webhook').item.json.body.lead_name || 'Mitglied' }}",
+              "type": "string"
+            },
+            {
+              "id": "out-pl-0000-0000-000000000004",
+              "name": "template_name",
+              "value": "={{ $('Job Webhook').item.json.body.template_name }}",
+              "type": "string"
+            },
+            {
+              "id": "out-pl-0000-0000-000000000005",
+              "name": "campaign_key",
+              "value": "={{ $('Job Webhook').item.json.body.campaign_key }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [440, 0],
+      "id": "out-node-0001-0000-0000-000000000003",
+      "name": "Build Payload"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "REPLACE_WITH_META_PHONE_NUMBER_ID",
+        "recipientPhoneNumber": "={{ $json.wa_id }}",
+        "textBody": "Template send placeholder — see notes",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [660, 0],
+      "id": "out-node-0001-0000-0000-000000000004",
+      "name": "Send Template (HTTP override below)",
+      "webhookId": "out-webhook-0001-0000-0000-000000000002",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "Fo62KhQkGi3auwzl",
+          "name": "WhatsApp account"
+        }
+      },
+      "notes": "The n8n WhatsApp node v1.1 doesn't ship a clean templates form; use the HTTP Request node below instead. Disable this node after import (right-click → Deactivate) if you keep the HTTP path.",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $('Job Webhook').item.json.headers ? '' : '' }}/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $json.wa_id }}\",\n  \"type\": \"template\",\n  \"template\": {\n    \"name\": \"{{ $json.template_name }}\",\n    \"language\": { \"code\": \"{{ $('Config').item.json.language_code }}\" },\n    \"components\": [\n      {\n        \"type\": \"body\",\n        \"parameters\": [\n          { \"type\": \"text\", \"text\": {{ JSON.stringify($json.lead_name) }} }\n        ]\n      }\n    ]\n  }\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [880, 0],
+      "id": "out-node-0001-0000-0000-000000000005",
+      "name": "Send Template via Graph API",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "Fo62KhQkGi3auwzl",
+          "name": "WhatsApp account"
+        }
+      },
+      "notes": "URL must include your Meta phone_number_id, e.g. https://graph.facebook.com/v21.0/873532982504084/messages — replace the {{ ... }} placeholder before activating. The whatsAppApi credential supplies the bearer token via predefinedCredentialType."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.BACKEND_URL }}/internal/jobs/{{ $('Build Payload').item.json.job_id }}/sent",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"detail\": \"meta accepted, message_id={{ $json.messages?.[0]?.id ?? 'unknown' }}\"\n}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1100, -120],
+      "id": "out-node-0001-0000-0000-000000000006",
+      "name": "Mark Sent"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.BACKEND_URL }}/internal/jobs/{{ $('Build Payload').item.json.job_id }}/failed",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"detail\": {{ JSON.stringify(($json.error?.message ?? 'meta send failed').toString()) }}\n}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1100, 120],
+      "id": "out-node-0001-0000-0000-000000000007",
+      "name": "Mark Failed"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "15YfxIkcI5KwxWoNgockJtTtZYXCJZGg5YdptN8aOwgg",
+          "mode": "list",
+          "cachedResultName": "whatsapp chatbot",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15YfxIkcI5KwxWoNgockJtTtZYXCJZGg5YdptN8aOwgg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now.setZone('Asia/Jerusalem').toFormat('dd-MM-yy HH:mm:ss') }}",
+            "Phone Number": "={{ $('Build Payload').item.json.wa_id }}",
+            "User Message": "=[outbound template] {{ $('Build Payload').item.json.template_name }}",
+            "Bot Response": "={{ $('Build Payload').item.json.lead_name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            { "id": "Timestamp", "displayName": "Timestamp", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "Phone Number", "displayName": "Phone Number", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "User Message", "displayName": "User Message", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "Bot Response", "displayName": "Bot Response", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [1320, 0],
+      "id": "out-node-0001-0000-0000-000000000008",
+      "name": "Audit Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "SLBxpeJtZxyr0zSs",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"ok\",\n  \"job_id\": \"{{ $('Build Payload').item.json.job_id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1540, 0],
+      "id": "out-node-0001-0000-0000-000000000009",
+      "name": "Respond OK"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Job Webhook": {
+      "main": [[{ "node": "Config", "type": "main", "index": 0 }]]
+    },
+    "Config": {
+      "main": [[{ "node": "Build Payload", "type": "main", "index": 0 }]]
+    },
+    "Build Payload": {
+      "main": [[{ "node": "Send Template via Graph API", "type": "main", "index": 0 }]]
+    },
+    "Send Template via Graph API": {
+      "main": [[
+        { "node": "Mark Sent", "type": "main", "index": 0 },
+        { "node": "Audit Sheet", "type": "main", "index": 0 }
+      ]],
+      "error": [[{ "node": "Mark Failed", "type": "main", "index": 0 }]]
+    },
+    "Mark Sent": {
+      "main": [[{ "node": "Respond OK", "type": "main", "index": 0 }]]
+    },
+    "Mark Failed": {
+      "main": [[{ "node": "Respond OK", "type": "main", "index": 0 }]]
+    },
+    "Audit Sheet": {
+      "main": [[]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "00000000-0000-0000-0000-000000000002",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "1e2a03a00dbb1754c1076bbaab20e5fae1fe76c058d93202528b37de939dbb45"
+  },
+  "id": "wa-mvp-outbound-0001",
+  "tags": []
+}

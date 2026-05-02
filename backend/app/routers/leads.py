@@ -4,7 +4,9 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models import Lead
-from app.schemas import LeadCreate, LeadRead
+from app.schemas import LeadByPhoneRead, LeadCreate, LeadRead
+from app.services.gym_profile import GYM_PROFILE
+from app.services.orchestrator import playbook_for_lead
 
 router = APIRouter(prefix="/api/v1/leads", tags=["leads"])
 
@@ -40,3 +42,21 @@ def get_lead(lead_id: str, db: Session = Depends(get_db)) -> Lead:
     if not lead:
         raise HTTPException(status_code=404, detail="not found")
     return lead
+
+
+@router.get("/by-phone/{wa_id}", response_model=LeadByPhoneRead)
+def get_lead_by_phone(wa_id: str, db: Session = Depends(get_db)) -> LeadByPhoneRead:
+    """n8n calls this on every inbound WhatsApp message.
+
+    Meta's `wa_id` arrives without the leading `+` (e.g. `49301234567`); our DB
+    stores E.164 with `+`. Try both forms so the workflow doesn't have to care.
+    """
+    candidates = [wa_id, f"+{wa_id}"] if not wa_id.startswith("+") else [wa_id, wa_id.lstrip("+")]
+    lead = db.scalars(select(Lead).where(Lead.phone_e164.in_(candidates))).first()
+
+    playbook = playbook_for_lead(lead) if lead else "unknown"
+    return LeadByPhoneRead(
+        lead=LeadRead.model_validate(lead) if lead else None,
+        playbook=playbook,
+        gym=GYM_PROFILE,
+    )
